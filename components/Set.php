@@ -10,7 +10,7 @@
  *
  * @package  yii-utility
  */
-class Set extends CComponent implements SetInterface, Countable, ArrayAccess, IteratorAggregate
+class Set extends CComponent implements SetInterface, ArrayableInterface, ArrayAccess
 {
     /**
      * @var array  data stored in the set

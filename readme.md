@@ -2,10 +2,8 @@
 
 ## ActiveRecordSet
 
-ActiveRecord set represents an iteratable, countable set of AR objects. It's mainly a helper
-class for saving, validating, and deleting multiple AR objects.
-
-### Usage
+ActiveRecordSet is a helper class for dealing with collections of ActiveRecord objects. Here's
+a contrived example of its usage:
 
 ```php
 public function actionCreateMultipleCustomers(array $data=null, $count=1)

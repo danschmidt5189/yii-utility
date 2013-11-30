@@ -10,12 +10,27 @@
  *
  * @package  yii-utility
  */
-interface SetInterface extends CollectionInterface
+interface SetInterface extends Countable, IteratorAggregate
 {
     /**
-     * @return array  returns the set as an array
+     * Returns the item stored at the key
      */
-    public function toArray();
+    public function lookup($key);
+
+    /**
+     * Adds a new key ->value pair
+     */
+    public function add($key, $value);
+
+    /**
+     * Replaces the item stored at the key with a new value
+     */
+    public function replace($key, $value);
+
+    /**
+     * Removes the item stored at the key
+     */
+    public function remove($key);
 
     /**
      * @return array  list of keys in the set
