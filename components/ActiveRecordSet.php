@@ -455,6 +455,14 @@ class ActiveRecordSet extends CComponent implements Iterator, ArrayAccess, Count
     }
 
     /**
+     * Implements the Arrayable interface
+     */
+    public function toArray()
+    {
+        return $this->all();
+    }
+
+    /**
      * Loads attributes into a model
      *
      * @param CModel $record  the model
