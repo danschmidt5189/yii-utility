@@ -26,14 +26,6 @@ class Set extends CComponent implements SetInterface, ArrayableInterface, ArrayA
     }
 
     /**
-     * @return datatype description
-     */
-    public function toArray()
-    {
-        return $this->_data;
-    }
-
-    /**
      * Merges this set with another set of data
      *
      * @param mixed $data  the data to merge with
@@ -178,11 +170,11 @@ class Set extends CComponent implements SetInterface, ArrayableInterface, ArrayA
     public function contains($keys)
     {
         $className = get_class($this);
-        if ($keys instanceof $className) {
+        if ($keys instanceof Arrayable) {
             $keys = array_keys($keys->toArray());
         }
-        if (!is_array($keys)) {
-            $keys = array($keys);
+        if (!is_array($keys) || !$keys instanceof Traversable) {
+            return false;
         }
         foreach (array_unique($keys) as $key) {
             if (!isset($this->_data[$key])) {
@@ -230,14 +222,32 @@ class Set extends CComponent implements SetInterface, ArrayableInterface, ArrayA
         return array_keys($this->_data);
     }
 
+    /**
+     * Implement the Countable interface
+     */
     public function count()
     {
         return count($this->_data);
     }
+    /**
+     * Implement the Arrayable interface
+     *
+     * @return array  set data
+     */
+    public function toArray()
+    {
+        return $this->_data;
+    }
+    /**
+     * Implement the IteratorAggregate interface
+     */
     public function getIterator()
     {
         return new ArrayIterator($this->_data);
     }
+    /**
+     * Implement the ArrayAccess interface
+     */
     public function offsetGet($key)
     {
         return $this->lookup($key);
