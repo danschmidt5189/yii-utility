@@ -52,7 +52,7 @@ class ActiveRecordSet extends Set
     /**
      * Sets attributes to each record in the set
      *
-     * This is equivalent to [[loadMultiple]]
+     * This is equivalent to [[load]]
      *
      * @param array   $indexedAttributes  arrays of record attributes indexed by record key
      * @param boolean $safeOnly    whether to only set safe attributes
@@ -60,7 +60,7 @@ class ActiveRecordSet extends Set
      */
     public function setAttributes($indexedAttributes, $safeOnly=true)
     {
-        return $this->loadMultiple($indexedAttributes, $safeOnly);
+        return $this->load($indexedAttributes, $safeOnly);
     }
 
     /**
@@ -70,7 +70,7 @@ class ActiveRecordSet extends Set
      * @param boolean $safeOnly           whether to only set safe attributes
      * @return boolean  whether any data was loaded
      */
-    public function loadMultiple($indexedAttributes, $safeOnly)
+    public function load($indexedAttributes, $safeOnly)
     {
         $loaded = false;
         if (is_array($indexedAttributes)) {
@@ -92,7 +92,7 @@ class ActiveRecordSet extends Set
      * @param boolean $safeOnly    whether to only set safe attributes
      * @return boolean  whether any records were modified
      */
-    public function load($attributes, $safeOnly)
+    public function loadToEach($attributes, $safeOnly)
     {
         $loaded = false;
         if (is_array($attributes)) {

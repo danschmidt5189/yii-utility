@@ -38,12 +38,16 @@ $indexedData = [
     2 =>['firstname' =>'Harry'],
 ];
 $customers->setAttributes($indexedData);
-$customers->loadMultiple($indexedData);
+$customers->load($indexedData);
 
 // Set the same set of data to every record in the set
 // After this, all customers will have the firstname 'John'
+// These are equivalent:
 $data = ['firstname' =>'John'];
-$customer->load($data);
+$customers->loadToEach($data);
+foreach ($customers as $customer) {
+    $customer->attributes = $data;
+}
 ```
 
 #### Delete / Save / Validate
@@ -54,20 +58,20 @@ records, and false otherwise.
 
 ```php
 // Validate all customers in the set
-$customers->validate();
+if ($customers->validate()) { /* all are valid */ }
 
 // Save all customers in the set
-$customers->save();
+if ($customers->save()) { /* all saved */ }
 
 // Delete all customers in the set
-$customers->delete();
+if ($customers->delete()) { /* all deleted */ }
 ```
 
 #### Get Errors
 
 ```php
 // Whether any record in the set has an error
-$customers->hasError();
+if ($customers->hasError()) { /* at least one record has an error */ }
 
 // Errors indexed by record key
 $customers->getErrors();
