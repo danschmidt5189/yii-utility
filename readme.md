@@ -5,24 +5,62 @@
 ActiveRecord set represents an iteratable, countable set of AR objects. It's mainly a helper
 class for saving, validating, and deleting multiple AR objects.
 
-Here's what you can do with it:
+### Acts like an array
 
 ```php
+// Load records from an array
 $customers = new ActiveRecordSet(Customer::model()->findAll(['limit' =>5]));
 
-// Acts like an array
+// Countable
 echo count($customers); // '5'
-foreach ($customers as $customer) {
-    // $customer is a Customer object
-}
+
+// Traversable
+foreach ($customers as $customer) { ... }
+
+// Array access
 echo $customers[0]['firstname'];
+```
 
-// Set attributes and detect if changes were made
-if ($customers->load($data)) { /* Changes made */ }
-if ($customers->loadMultiple($indexedData)) { /* Changes made */ }
+### Implements common model methods
 
-// Validate, save, delete all records
-if ($customers->validate()) { /* All validated */ }
-if ($customers->save()) { /* All saved */ }
-if ($customers->delete()) { /* All deleted */ }
+#### Loading Data
+
+`load()` and `loadMultiple()` simplify setting attributes to many models. Both functions return
+whether any attributes were modified.
+
+```php
+// Sets data to every record in the set
+// These equivalent:
+$customers->setAttributes($data);
+$customers->load($data);
+
+// Sets data to records in the set matching the indexes in the data
+$customer->loadMultiple($indexedData);
+```
+
+#### Delete / Save / Validate
+
+`delete()`, `save()`, and `validate()` implement the same interface as their CActiveRecord counterparts
+but apply the method to every record in the set. They return true if the operation succeeded for all
+records, and false otherwise.
+
+```php
+// Validate all customers in the set
+$customers->validate();
+
+// Save all customers in the set
+$customers->save();
+
+// Delete all customers in the set
+$customers->delete();
+```
+
+#### Get Errors
+
+```php
+// Whether any record in the set has an error
+$customers->hasError();
+
+// Errors indexed by record key
+$customers->getErrors();
 ```
