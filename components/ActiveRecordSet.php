@@ -201,7 +201,7 @@ class ActiveRecordSet extends CComponent implements Iterator, ArrayAccess, Count
      *
      * @return ActiveRecordSet  the copied set
      */
-    public function copy($attributes=null)
+    public function clone($attributes=null)
     {
         $set = new ActiveRecordSet(null, $this->_index);
         if ($this->count() === 0) {
@@ -265,12 +265,14 @@ class ActiveRecordSet extends CComponent implements Iterator, ArrayAccess, Count
      * @param CActiveRecord $record  record or records to add to the set
      * @return mixed  the value(s) replaced by the new record
      */
-    public function add($record)
+    public function add($records)
     {
-        if (is_array($record)) {
-            return $this->addMultiple($record);
-        } else if (null !== $record) {
-            return $this->addItem($record);
+        if ($records instanceof ActiveRecordSet) {
+            return $this->addMultiple($records->all());
+        } else if (is_array($records)) {
+            return $this->addMultiple($records);
+        } else if (null !== $records) {
+            return $this->addItem($records);
         }
     }
 
@@ -280,12 +282,14 @@ class ActiveRecordSet extends CComponent implements Iterator, ArrayAccess, Count
      * @param mixed $record  record or index of the record
      * @return mixed  the removed record, or null if it was not part of the set
      */
-    public function remove($record)
+    public function remove($records)
     {
-        if (is_array($record)) {
-            return $this->removeMultiple($record);
-        } else if (null !== $record) {
-            return $this->removeItem($record);
+        if ($records instanceof ActiveRecordSet) {
+            return $this->removeMultiple($records->all());
+        } else if (is_array($records)) {
+            return $this->removeMultiple($records);
+        } else if (null !== $records) {
+            return $this->removeItem($records);
         }
     }
 
