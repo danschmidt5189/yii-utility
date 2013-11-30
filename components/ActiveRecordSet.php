@@ -1,6 +1,25 @@
 <?php
 /**
+ * ActiveRecordSet.php class file.
+ *
+ * @author Dan Schmidt <danschmidt5189@gmail.com>
+ */
+
+/**
  * Represents a collection of ActiveRecord objects
+ *
+ * @property string $_index    the record property used for indexing
+ * @property array  $_records  the records in the set
+ *
+ * @method boolean load()           loads attribute data into each record
+ * @method boolean loadMultiple()   loads attribute data into records specified by a primary key
+ * @method boolean save()           saves all records in the set
+ * @method boolean validate()       validates all records in the set
+ * @method array   getAttributes()  returns record attributes (arrays) indexed by the index property
+ * @method array   getErrors()      returns record error messages (arrays) indexed by the index property
+ * @method boolean hasErrors()      returns whether any record in the set is invalid
+ *
+ * @package  yii-utility
  */
 class ActiveRecordSet extends CComponent implements Iterator, ArrayAccess, Countable
 {
