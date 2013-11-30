@@ -83,11 +83,14 @@ You can specify any index you want when adding records to the set. You can also 
 attribute by using the `reindex()` method:
 
 ```php
-$customers = new ActiveRecordSet(array(new Customer(), new Customer(), new Customer()));
+$customers = new ActiveRecordSet([new Customer(), new Customer(), new Customer()]);
 $customers->loadToEach($data);
 if ($customers->save()) {
     // Reindex the set based on the newly-set primary key
+    // The following are equivalent
+    $customers = $customers->reindex();
     $customers = $customers->reindex('id');
+    $customers = $customers->reindex('promaryKey');
 }
 ```
 
