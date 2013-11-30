@@ -90,9 +90,13 @@ if ($customers->save()) {
     // The following are equivalent
     $customers = $customers->reindex();
     $customers = $customers->reindex('id');
-    $customers = $customers->reindex('promaryKey');
+    $customers = $customers->reindex('primaryKey');
 }
 ```
+
+Note that reindexing on a non-unique attribute can throw an exception if there is already a value stored at that key.
+You can overwrite the existing value by passing `true` as the second argument to `reindex()`. This tells the reindexer
+to use `Set::replace()` instead of `Set::add()` when re-inserting records into the set.
 
 ## Set Methods
 
