@@ -164,17 +164,22 @@ class Set extends CComponent implements SetInterface, ArrayableInterface, ArrayA
     /**
      * Returns whether there is a value stored at the given key
      *
-     * @param mixed $keys  array of keys, or another set
+     * Checking is done based on the key, not based on the value at the key.
+     *
+     * @param mixed $keys  a key, a list of keys in an array, or another set
      * @return boolean  whether this set contains values at each of the keys
      */
-    public function contains($keys)
+    public function contains($set)
     {
         $className = get_class($this);
-        if ($keys instanceof Arrayable) {
-            $keys = array_keys($keys->toArray());
-        }
-        if (!is_array($keys) || !$keys instanceof Traversable) {
-            return false;
+        if ($set instanceof $className) {
+            $keys = array_keys($set->toArray());
+        } else if (is_array($set)) {
+            $keys = $set;
+        } else if (is_scalar($set)) {
+            $keys = array($set);
+        } else {
+            throw new SetException('Set::contains() requires the argument to be a key, a list of keys, or another set');
         }
         foreach (array_unique($keys) as $key) {
             if (!isset($this->_data[$key])) {
