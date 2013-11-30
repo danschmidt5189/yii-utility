@@ -20,7 +20,7 @@ $customers->retrieve(Customer::model()->findByPk(1));
 // Nested attribute access
 $customers[1]['firstname'];
 $customers->retrieve(1)['firstname'];
-$customers->retrieve(Customer::model()->findByPk(1))['firstname'];
+$customers->retrieve(Customer::model()->findByPk(1))->getAttribute('firstname');
 
 // Iterator
 foreach ($customers as $id =>$customer) { /* cool stuff */ }
