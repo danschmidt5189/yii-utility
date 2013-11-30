@@ -5,6 +5,11 @@
 class ActiveRecordSet extends CComponent implements Iterator, ArrayAccess, Countable
 {
     /**
+     * @var string  value used to concatenate composite keys into a string
+     */
+    const COMPOSITE_KEY_SEPARATOR = '_';
+
+    /**
      * @var mixed  index of the current record. Implements Iterator interface.
      */
     private $_key;
@@ -201,7 +206,7 @@ class ActiveRecordSet extends CComponent implements Iterator, ArrayAccess, Count
      *
      * @return ActiveRecordSet  the copied set
      */
-    public function clone($attributes=null)
+    public function cloneSet($attributes=null)
     {
         $set = new ActiveRecordSet(null, $this->_index);
         if ($this->count() === 0) {
@@ -296,12 +301,18 @@ class ActiveRecordSet extends CComponent implements Iterator, ArrayAccess, Count
     /**
      * Returns the index at which a record will be stored
      *
+     * Composite keys are imploded using an underscore.
+     *
      * @param CActiveRecord $record  the record
      * @return mixed  the index for the record. See [[_index]].
      */
     public function getRecordKey($record)
     {
-        return is_object($record) ? $record->{$this->_index} : $record;
+        $key = is_object($record) ? $record->{$this->_index} : $record;
+        if (is_array($key)) {
+            $key = implode(self::COMPOSITE_KEY_SEPARATOR, $key);
+        }
+        return $key;
     }
 
     /**
