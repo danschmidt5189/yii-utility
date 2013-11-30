@@ -34,3 +34,19 @@ if (!$customers->loadMultiple($request->getParam('Customer'))) {
     // Saved
 }
 ```
+
+### Set Indexing
+
+Each set is indexed by an attribute (or getter method) of the records it contains. The default is to use each record's primary key.
+
+Composite keys are concatened together using an underscore.
+
+You can specify your own composite key when constructing the set, or later using `setIndex()`. Setting the index will re-index the
+records of the set and may result in some records being overridden.
+
+```php
+$customers = new ActiveRecordSet(Customer::model()->order('t.id ASC')->limit(10)->findAll());
+print_r($customers->keys()); // 0 1 2 3...
+$customers->setIndex('firstname');
+print_r($customers->keys()); // 'Dan' 'Mike' 'Joe' 'Rasmus'...
+```
