@@ -2,9 +2,10 @@
 
 ## ActiveRecordSet
 
-ActiveRecord set represents an iteratable, countable set of AR objects.
+ActiveRecord set represents an iteratable, countable set of AR objects. It's mainly a helper
+class for saving, validating, and deleting multiple AR objects.
 
-The value of this class can be summarized in a simple bulk-update example:
+Here's what you can do with it:
 
 ```php
 $customers = new ActiveRecordSet(Customer::model()->limit(10)->findAll());
