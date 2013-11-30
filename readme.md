@@ -5,6 +5,37 @@
 ActiveRecord set represents an iteratable, countable set of AR objects. It's mainly a helper
 class for saving, validating, and deleting multiple AR objects.
 
+### Usage
+
+```php
+public function actionCreateMultipleCustomers(array $data=null, $count=1)
+{
+    $count = (int)$count;
+    $count = max($count, 0);
+    $count = min($count, 10);
+
+    $customers = new ActiveRecordSet();
+    for ($i=0; $i<$count; $i++) {
+        $customers->add($i, new Customer());
+    }
+    if ($customers->loadToEach($data)) {
+        if ($customers->save()) {
+            echo CJSON::encode(array(
+                'statusCode' =>201,
+                'message'    =>'Save Successful!',
+                'customers'  =>$customers->getAttributes()
+            ));
+        } else {
+            echo CJSON::encode(array(
+                'statusCode' =>$customers->hasErrors() ? 422 : 500,
+                'message'    =>'An error occurred.',
+                'errors'     =>$customers->getErrors(),
+            ));
+        }
+    }
+}
+```
+
 ### Acts like an array
 
 ```php
