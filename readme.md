@@ -16,8 +16,10 @@ Sets support the following CActiveRecord methods, which do pretty much what you 
 In addition, sets support:
 
 - `add()`: Add record(s) to the set.
-- `remove()`: Remove record(s) from the set.
-- `retrieve()`: Return record(s) from the set.
+- `remove()`: Remove specified record(s) from the set.
+- `retrieve()`: Return specified record(s) from the set.
+- `all()`: Returns all records in the set.
+- `clear()`: Removes all records from the set.
 - `clone()`: Create an immutable copy of the set.
 
 ```php

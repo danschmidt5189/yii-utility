@@ -14,6 +14,7 @@
  * @method boolean load()           loads attribute data into each record
  * @method boolean loadMultiple()   loads attribute data into records specified by a primary key
  * @method boolean save()           saves all records in the set
+ * @method boolean delete()         deletes all records in the set
  * @method boolean validate()       validates all records in the set
  * @method array   getAttributes()  returns record attributes (arrays) indexed by the index property
  * @method array   getErrors()      returns record error messages (arrays) indexed by the index property
@@ -104,6 +105,20 @@ class ActiveRecordSet extends CComponent implements Iterator, ArrayAccess, Count
     public function setAttributes($attributes, $safeOnly=true)
     {
         return $this->load($attributes, $safeOnly);
+    }
+
+    /**
+     * Deletes all records in the set
+     *
+     * @return boolean  whether all records were deleted
+     */
+    public function delete()
+    {
+        $allDeleted = true;
+        foreach ($this as $key =>$record) {
+            $allDeleted = $record->delete() && $allDeleted;
+        }
+        return $allDeleted;
     }
 
     /**
