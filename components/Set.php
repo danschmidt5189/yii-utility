@@ -30,7 +30,7 @@ class Set extends CComponent implements SetInterface, ArrayableInterface, ArrayA
      */
     public function toArray()
     {
-        return $_data;
+        return $this->_data;
     }
 
     /**
