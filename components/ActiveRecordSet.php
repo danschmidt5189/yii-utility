@@ -52,13 +52,57 @@ class ActiveRecordSet extends Set
     /**
      * Sets attributes to each record in the set
      *
-     * @param array   $attributes  name =>value attribute pairs
+     * This is equivalent to [[loadMultiple]]
+     *
+     * @param array   $indexedAttributes  arrays of record attributes indexed by record key
      * @param boolean $safeOnly    whether to only set safe attributes
      * @return array  keys of the records that were modified. This will be empty if no records were modified.
      */
-    public function setAttributes($attributes, $safeOnly=true)
+    public function setAttributes($indexedAttributes, $safeOnly=true)
     {
-        return $this->load($attributes, $safeOnly);
+        return $this->loadMultiple($indexedAttributes, $safeOnly);
+    }
+
+    /**
+     * Loads data into specific records in the set
+     *
+     * @param array   $indexedAttributes  arrays of record attributes indexed by record key
+     * @param boolean $safeOnly           whether to only set safe attributes
+     * @return boolean  whether any data was loaded
+     */
+    public function loadMultiple($indexedAttributes, $safeOnly)
+    {
+        $loaded = false;
+        if (is_array($indexedAttributes)) {
+            foreach ($this as $key =>$record) {
+                if (isset($indexedAttributes[$key])) {
+                    $oldAttributes = $record->getAttributes();
+                    $record->setAttributes($indexedAttributes[$key], $safeOnly);
+                    $loaded = $loaded || ($oldAttributes !== $record->getAttributes());
+                }
+            };
+        }
+        return $loaded;
+    }
+
+    /**
+     * Loads data into each record in the set
+     *
+     * @param array   $attributes  data to load. This is loaded into each record in the set.
+     * @param boolean $safeOnly    whether to only set safe attributes
+     * @return boolean  whether any records were modified
+     */
+    public function load($attributes, $safeOnly)
+    {
+        $loaded = false;
+        if (is_array($attributes)) {
+            foreach ($this as $key =>$record) {
+                $oldAttributes = $record->getAttributes();
+                $record->setAttributes($attributes, $safeOnly);
+                $loaded = $loaded || ($oldAttributes !== $record->getAttributes());
+            }
+        }
+        return $loaded;
     }
 
     /**
@@ -139,47 +183,5 @@ class ActiveRecordSet extends Set
             }
         }
         return $errors;
-    }
-
-    /**
-     * Loads data into each record in the set
-     *
-     * @param array   $attributes  data to load
-     * @param boolean $safeOnly    whether to only set safe attributes
-     * @return boolean  whether any records were modified
-     */
-    public function load($attributes, $safeOnly)
-    {
-        $loaded = false;
-        if (is_array($attributes)) {
-            foreach ($this as $key =>$record) {
-                $oldAttributes = $record->getAttributes();
-                $record->setAttributes($attributes, $safeOnly);
-                $loaded = $loaded || ($oldAttributes !== $record->getAttributes());
-            }
-        }
-        return $loaded;
-    }
-
-    /**
-     * Loads data into specific records in the set
-     *
-     * @param array   $indexedAttributes  arrays of record attributes indexed by record key
-     * @param boolean $safeOnly           whether to only set safe attributes
-     * @return boolean  whether any data was loaded
-     */
-    public function loadMultiple($indexedAttributes, $safeOnly)
-    {
-        $loaded = false;
-        if (is_array($indexedAttributes)) {
-            foreach ($this as $key =>$record) {
-                if (isset($indexedAttributes[$key])) {
-                    $oldAttributes = $record->getAttributes();
-                    $record->setAttributes($indexedAttributes[$key], $safeOnly);
-                    $loaded = $loaded || ($oldAttributes !== $record->getAttributes());
-                }
-            };
-        }
-        return $loaded;
     }
 }

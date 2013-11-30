@@ -29,13 +29,21 @@ echo $customers[0]['firstname'];
 whether any attributes were modified.
 
 ```php
-// Sets data to every record in the set
-// These equivalent:
-$customers->setAttributes($data);
-$customers->load($data);
+// Load data into the appropriate records based on an index
+// loadMultiple() and setAttributes() are equivalent
+// Only the customers with keys 0, 1, and 2 will be modified
+$indexedData = [
+    0 =>['firstname' =>'Tom'],
+    1 =>['firstname' =>'Dick'],
+    2 =>['firstname' =>'Harry'],
+];
+$customers->setAttributes($indexedData);
+$customers->loadMultiple($indexedData);
 
-// Sets data to records in the set matching the indexes in the data
-$customer->loadMultiple($indexedData);
+// Set the same set of data to every record in the set
+// After this, all customers will have the firstname 'John'
+$data = ['firstname' =>'John'];
+$customer->load($data);
 ```
 
 #### Delete / Save / Validate
