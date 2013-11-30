@@ -8,48 +8,21 @@ class for saving, validating, and deleting multiple AR objects.
 Here's what you can do with it:
 
 ```php
-$customers = new ActiveRecordSet(Customer::model()->limit(10)->findAll());
+$customers = new ActiveRecordSet(Customer::model()->findAll(['limit' =>5]));
 
-// Countable
-echo count($customers); // '10'
-
-// Array access
-$customers[1];
-$customers->retrieve(1);
-$customers->retrieve(Customer::model()->findByPk(1));
-
-// Nested attribute access
-$customers[1]['firstname'];
-$customers->retrieve(1)['firstname'];
-$customers->retrieve(Customer::model()->findByPk(1))->getAttribute('firstname');
-
-// Iterator
-foreach ($customers as $id =>$customer) { /* cool stuff */ }
-
-// Load data to all models
-// All customers in the set now have firstname 'John'.
-// $loaded tells you whether any attributes were changed.
-$loaded = $customers->load(['firstname' =>'John']);
-
-// Load model to records in the set having a specific index
-// Customer with id 1 will have his last name modified
-$loaded = $customers->loadMultiple([1 =>['lastname' ='Doe']]);
-
-// Validate all models
-// $valid tells you if all models are valid
-$valid = $customers->validate();
-
-// Error-handling
-if ($customers->hasErrors()) {
-    echo CJSON::encode($customers->getErrors(););
+// Acts like an array
+echo count($customers); // '5'
+foreach ($customers as $customer) {
+    // $customer is a Customer object
 }
+echo $customers[0]['firstname'];
 
-// Save all models
-// $saved tells you if all models saved successfully
-$saved = $customers->save();
+// Set attributes and detect if changes were made
+if ($customers->load($data)) { /* Changes made */ }
+if ($customers->loadMultiple($indexedData)) { /* Changes made */ }
 
-// Delete all models
-// $deleted tells you if all models were deleted
-$deleted = $customers->delete();
-
+// Validate, save, delete all records
+if ($customers->validate()) { /* All validated */ }
+if ($customers->save()) { /* All saved */ }
+if ($customers->delete()) { /* All deleted */ }
 ```
