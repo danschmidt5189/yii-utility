@@ -26,6 +26,10 @@ foreach ($customers as $id =>$customer) { /* cool stuff */ }
 // $loaded tells you whether any attributes were changed.
 $loaded = $customers->load(['firstname' =>'John']);
 
+// Load model to records in the set having a specific index
+// Customer with id 1 will have his last name modified
+$loaded = $customers->loadMultiple([1 =>['lastname' ='Doe']]);
+
 // Validate all models
 // $valid tells you if all models are valid
 $valid = $customers->validate();
