@@ -14,9 +14,13 @@ echo count($customers); // '10'
 
 // Array access
 $customers[1];
-$customers[1]['firstname'];
 $customers->retrieve(1);
 $customers->retrieve(Customer::model()->findByPk(1));
+
+// Nested attribute access
+$customers[1]['firstname'];
+$customers->retrieve(1)['firstname'];
+$customers->retrieve(Customer::model()->findByPk(1))['firstname'];
 
 // Iterator
 foreach ($customers as $id =>$customer) { /* cool stuff */ }
