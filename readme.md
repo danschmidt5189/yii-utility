@@ -13,8 +13,10 @@ $customers = new ActiveRecordSet(Customer::model()->limit(10)->findAll());
 echo count($customers); // '10'
 
 // Array access
-// Equivalent to $customers->retrieve(1);
 $customers[1];
+$customers[1]['firstname'];
+$customers->retrieve(1);
+$customers->retrieve(Customer::model()->findByPk(1));
 
 // Iterator
 foreach ($customers as $id =>$customer) { /* cool stuff */ }
