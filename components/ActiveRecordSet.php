@@ -1,14 +1,6 @@
 <?php
 /**
- * ActiveRecordSet.php class file.
- *
- * @author Dan Schmidt <danschmidt5189@gmail.com>
- */
-
-/**
  * Represents a collection of ActiveRecord objects
- *
- * Add, retrieve, index, save, and validate members of the set.
  */
 class ActiveRecordSet extends CComponent implements Iterator, ArrayAccess, Countable
 {
@@ -25,7 +17,137 @@ class ActiveRecordSet extends CComponent implements Iterator, ArrayAccess, Count
     /**
      * @var array  ActiveRecord objects indexed by the [[index]]
      */
-    private $_records;
+    private $_records = array();
+
+    /**
+     * Loads attributes into all records
+     *
+     * @param array   $attributes  attribute values indexed by name
+     * @param boolean $safeOnly    whether to only set safe attributes
+     * @return boolean  whether any records were loaded with data
+     */
+    public function load($attributes, $safeOnly=true)
+    {
+        $anyLoaded = false;
+        foreach ($this as $record) {
+            $anyLoaded = self::loadRecordAttributes($record, $attributes, $safeOnly) || $anyLoaded;
+        }
+        return $anyLoaded;
+    }
+
+    /**
+     * Loads data into a record with the appropriate index
+     *
+     * @param array   $indexedAttributes  attribute arrays indexed by the index of the record they correspond to
+     * @param boolean $safeOnly           whether to only set safe attributes
+     * @return boolean  whether any records were loaded with data
+     */
+    public function loadMultiple($indexedAttributes, $safeOnly=true)
+    {
+        $anyLoaded = false;
+        if (is_array($indexedAttributes)) {
+            foreach ($indexedAttributes as $key =>$attributes) {
+                if ($record = $this->retrieve($key)) {
+                    $anyLoaded = self::loadRecordAttributes($record, $attributes, $safeOnly) || $anyLoaded;
+                }
+            }
+        }
+        return $anyLoaded;
+    }
+
+    /**
+     * Gets attributes for all records in the set
+     *
+     * @return array  attributes indexed by record primary key
+     */
+    public function getAttributes($attributes=null)
+    {
+        $data = array();
+        foreach ($this as $record) {
+            $data[$this->getRecordKey($record)] = $record->getAttributes($attributes);
+        }
+        return $data;
+    }
+
+    /**
+     * Sets attributes to each record in the set
+     *
+     * @param array   $attributes  attributes to set into each model. This is a single array of attribute values
+     *                             indexed by the attribute name.
+     * @param boolean $safeOnly    whether to only set safe attributes
+     * @return boolean  whether any records were loaded with data
+     */
+    public function setAttributes($attributes, $safeOnly=true)
+    {
+        return $this->load($attributes, $safeOnly);
+    }
+
+    /**
+     * Saves all records in the set
+     *
+     * @param boolean $runValidation  whether to perform validation
+     * @param array   $attributes     attributes to save. Defaults to null, meaning all attributes are saved.
+     * @return boolean  whether all records saved successfully
+     */
+    public function save($runValidation=true, $attributes=null)
+    {
+        if ($runValidation && !$this->validate()) {
+            return false;
+        }
+        $allSaved = true;
+        foreach ($this as $key =>$record) {
+            $allSaved = $record->save(false, $attributes) && $allSaved;
+        }
+        return $allSaved;
+    }
+
+    /**
+     * Validates all records in the set
+     *
+     * @param array $attributes  names of attributes to validate on each record
+     * @return boolean  whether all records are valid
+     */
+    public function validate($attributes=null)
+    {
+        $allValid = true;
+        foreach ($this as $key =>$record) {
+            $allValid = $record->validate($attributes) && $allValid;
+        }
+        return $allValid;
+    }
+
+    /**
+     * Get record errors
+     *
+     * @param string $attribute  attribute name. Use null to retrieve errors for all attributes
+     * @return array  errors for all attributes or the specified attribute for each record in the set,
+     *                indexed by the [[_index]] of the set.
+     */
+    public function getErrors($attribute=null)
+    {
+        $errors = array();
+        foreach ($this as $key =>$record) {
+            $errors[$key] = $record->getErrors($attribute);
+        }
+        return $errors;
+    }
+
+    /**
+     * Returns whether any record in the set has errors
+     *
+     * @param string $attribute  attribute name. Use null to check all attributes.
+     * @return boolean  whether any record in the set has errors
+     */
+    public function hasErrors($attribute=null)
+    {
+        $errors = $this->getErrors($attribute);
+        foreach ($errors as $recordSpecificErrors) {
+            if (!empty($recordSpecificErrors)) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     /**
      * @param array $records description
@@ -34,6 +156,16 @@ class ActiveRecordSet extends CComponent implements Iterator, ArrayAccess, Count
     {
         $this->_index = $index;
         $this->add($records);
+    }
+
+    /**
+     * Returns keys of the record set
+     *
+     * @return array  keys
+     */
+    public function keys()
+    {
+        return array_keys($this->_records);
     }
 
     /**
@@ -166,107 +298,6 @@ class ActiveRecordSet extends CComponent implements Iterator, ArrayAccess, Count
     public function getRecordKey($record)
     {
         return is_object($record) ? $record->{$this->_index} : $record;
-    }
-
-    /**
-     * Gets attributes for all records in the set
-     *
-     * @return array  attributes indexed by record primary key
-     */
-    public function getAttributes($attributes=null)
-    {
-        $data = array();
-        foreach ($this as $record) {
-            $data[$this->getRecordKey($record)] = $record->getAttributes($attributes);
-        }
-        return $data;
-    }
-
-    /**
-     * Sets attributes to each record in the set
-     *
-     * @param array   $attributes  attributes to set into each model. This is a single array of attribute values
-     *                             indexed by the attribute name.
-     * @param boolean $safeOnly    whether to only set safe attributes
-     * @return boolean  whether any records were loaded with data
-     */
-    public function setAttributes($attributes, $safeOnly=true)
-    {
-        $anyLoaded = false;
-        foreach ($this as $record) {
-            $anyLoaded = self::loadRecordAttributes($record, $attributes, $safeOnly) || $anyLoaded;
-        }
-        return $anyLoaded;
-    }
-
-    /**
-     * Sets attributes indexed by record key to the corresponding record in the set
-     *
-     * @param array   $indexedAttributes  array of attribute array indexed by record primary key
-     * @param boolean $safeOnly           whether to only set safe attributes
-     * @return boolean  whether any records were loaded with data
-     */
-    public function setIndexedAttributes($indexedAttributes, $safeOnly=true)
-    {
-        $anyLoaded = false;
-        if (is_array($indexedAttributes)) {
-            foreach ($indexedAttributes as $key =>$attributes) {
-                if ($record = $this->retrieve($key)) {
-                    $anyLoaded = self::loadRecordAttributes($record, $attributes, $safeOnly);
-                }
-            }
-        }
-        return $anyLoaded;
-    }
-
-    /**
-     * Saves all records in the set
-     *
-     * @param boolean $runValidation  whether to perform validation
-     * @param array   $attributes     attributes to save. Defaults to null, meaning all attributes are saved.
-     * @return boolean  whether all records saved successfully
-     */
-    public function save($runValidation=true, $attributes=null)
-    {
-        if ($runValidation && !$this->validate()) {
-            return false;
-        }
-        $allSaved = true;
-        foreach ($this as $key =>$record) {
-            $allSaved = $record->save(false, $attributes) && $allSaved;
-        }
-        return $allSaved;
-    }
-
-    /**
-     * Validates all records in the set
-     *
-     * @param array $attributes  names of attributes to validate on each record
-     * @return boolean  whether all records are valid
-     */
-    public function validate($attributes=null)
-    {
-        $allValid = true;
-        foreach ($this as $key =>$record) {
-            $allValid = $record->validate($attributes) && $allValid;
-        }
-        return $allValid;
-    }
-
-    /**
-     * Get record errors
-     *
-     * @param string $attribute  attribute name. Use null to retrieve errors for all attributes
-     * @return array  errors for all attributes or the specified attribute for each record in the set,
-     *                indexed by the [[_index]] of the set.
-     */
-    public function getErrors($attribute=null)
-    {
-        $errors = array();
-        foreach ($this as $key =>$record) {
-            $errors[$key] = $record->getErrors($attribute);
-        }
-        return $errors;
     }
 
     /**
