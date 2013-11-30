@@ -10,7 +10,7 @@
  *
  * @package  yii-utility
  */
-class ActiveRecordSet extends Set
+class ActiveRecordSet extends Set implements ActiveRecordInterface
 {
     /**
      * Returns attributes of each record in the set indexed by the record key
