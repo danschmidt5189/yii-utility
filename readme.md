@@ -25,7 +25,7 @@ echo $customers[0]['firstname'];
 
 #### Loading Data
 
-`load()` and `loadMultiple()` simplify setting attributes to many models. Both functions return
+`load()` and `loadToEach()` simplify setting attributes to many models. Both functions return
 whether any attributes were modified.
 
 ```php
@@ -76,3 +76,22 @@ if ($customers->hasError()) { /* at least one record has an error */ }
 // Errors indexed by record key
 $customers->getErrors();
 ```
+
+### Re-Indexing
+
+You can specify any index you want when adding records to the set. You can also create a new set indexed by a model
+attribute by using the `reindex()` method:
+
+```php
+$customers = new ActiveRecordSet(array(new Customer(), new Customer(), new Customer()));
+$customers->loadToEach($data);
+if ($customers->save()) {
+    // Reindex the set based on the newly-set primary key
+    $customers = $customers->reindex('id');
+}
+```
+
+## Set Methods
+
+The Set class implements standard set functions, including `union()`, `intersect()`, `difference()`, `contains()`,
+`add()`, `remove()`, `clear()`, and `merge()`.

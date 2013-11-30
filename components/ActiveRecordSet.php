@@ -13,28 +13,6 @@
 class ActiveRecordSet extends Set
 {
     /**
-     * Returns a new set made by reindexing this set using a model attribute
-     *
-     * @param string  $attribute  the attribute used for indexing. Defaults to the primaryKey.
-     * @param boolean $replace    whether to use 'replace' or 'add' when inserting records into the new set
-     * @return ActiveRecordSet  a new set indexed by the attribute
-     */
-    public function reindex($attribute='primaryKey', $replace=false)
-    {
-        $set = new ActiveRecordSet();
-        foreach ($this as $record) {
-            $newKey = isset($record->{$attribute}) && !empty($record->{$attribute}) ? $record->{$attribute} : uniqid();
-            $newKey = is_array($newKey) ? implode('_', $newKey) : $newKey;
-            if ($replace) {
-                $set->replace($newKey, $record);
-            } else {
-                $set->add($newKey, $record);
-            }
-        }
-        return $set;
-    }
-
-    /**
      * Returns attributes of each record in the set indexed by the record key
      *
      * @param array $attributes  attributes to retrieve. Use null to retrieve all attributes.
@@ -183,5 +161,27 @@ class ActiveRecordSet extends Set
             }
         }
         return $errors;
+    }
+
+    /**
+     * Returns a new set made by reindexing this set using a model attribute
+     *
+     * @param string  $attribute  the attribute used for indexing. Defaults to the primaryKey.
+     * @param boolean $replace    whether to use 'replace' or 'add' when inserting records into the new set
+     * @return ActiveRecordSet  a new set indexed by the attribute
+     */
+    public function reindex($attribute='primaryKey', $replace=false)
+    {
+        $set = new ActiveRecordSet();
+        foreach ($this as $record) {
+            $newKey = isset($record->{$attribute}) && !empty($record->{$attribute}) ? $record->{$attribute} : uniqid();
+            $newKey = is_array($newKey) ? implode('_', $newKey) : $newKey;
+            if ($replace) {
+                $set->replace($newKey, $record);
+            } else {
+                $set->add($newKey, $record);
+            }
+        }
+        return $set;
     }
 }
