@@ -2,132 +2,80 @@
 
 ## ActiveRecordSet
 
-ActiveRecordSet is a helper class for dealing with collections of ActiveRecord objects. Here's
-a contrived example of its usage:
+ActiveRecordSet is a helper class for dealing with collections of ActiveRecord objects.
+
+`__get()`, `__set()`, and `__call()` are overridden to allow access to methods of the
+AR models contained in the set. Results of method calls obtained by accessing the records
+within the set are returned in a `MultiResult` object.
+
+### Construction
 
 ```php
-public function actionCreateMultipleCustomers(array $data=null, $count=1)
-{
-    $count = (int)$count;
-    $count = max($count, 0);
-    $count = min($count, 10);
+// Get some customers from the DB
+// Note that the index is important! If you don't specify an index, you
+// may get unexpected results.
+$customers = Customer::model()->findAll(['limit' =>10, 'index' =>'id']);
 
-    $customers = new ActiveRecordSet();
-    for ($i=0; $i<$count; $i++) {
-        $customers->add($i, new Customer());
-    }
-    if ($customers->loadToEach($data)) {
-        if ($customers->save()) {
-            echo CJSON::encode(array(
-                'statusCode' =>201,
-                'message'    =>'Save Successful!',
-                'customers'  =>$customers->getAttributes()
-            ));
-        } else {
-            echo CJSON::encode(array(
-                'statusCode' =>$customers->hasErrors() ? 422 : 500,
-                'message'    =>'An error occurred.',
-                'errors'     =>$customers->getErrors(),
-            ));
-        }
-    }
+// Explicitly set the class name and load data
+$set = new ActiveRecordSet('Customer', $customers);
+
+// Implicitly set the class name and load data
+$set = new ActiveRecordSet($customers);
+
+// Explicitly set the class name, but load data later
+$set = new ActiveRecordSet('Customer');
+$set->add($customers);
+foreach ($customers as $id =>$record) {
+    $set->add($id, $record);
 }
 ```
 
-### Acts like an array
+### Setting Properties
 
 ```php
-// Load records from an array
-$customers = new ActiveRecordSet(Customer::model()->findAll(['limit' =>5]));
-
-// Countable
-echo count($customers); // '5'
-
-// Traversable
-foreach ($customers as $customer) { ... }
-
-// Array access
-echo $customers[0]['firstname'];
-```
-
-### Implements common model methods
-
-#### Loading Data
-
-`load()` and `loadToEach()` simplify setting attributes to many models. Both functions return
-whether any attributes were modified.
-
-```php
-// Load data into the appropriate records based on an index
-// loadMultiple() and setAttributes() are equivalent
-// Only the customers with keys 0, 1, and 2 will be modified
-$indexedData = [
-    0 =>['firstname' =>'Tom'],
-    1 =>['firstname' =>'Dick'],
-    2 =>['firstname' =>'Harry'],
+// Here's some data...
+$data = [
+    'firstname' =>'John',
+    'lastname'  =>'Doe',
 ];
-$customers->setAttributes($indexedData);
-$customers->load($indexedData);
 
-// Set the same set of data to every record in the set
-// After this, all customers will have the firstname 'John'
-// These are equivalent:
-$data = ['firstname' =>'John'];
-$customers->loadToEach($data);
-foreach ($customers as $customer) {
-    $customer->attributes = $data;
+// Equivalent to calling setAttributes($data) on each Customer in the set
+// This is safe-only
+$set->attributes = $data;
+
+// You can also be unsafe...
+$set->setAttributes($data, false);
+
+// ... or unsafe and set specific attributes...
+$set->balance = 0;
+
+// ... or specify which records to set data on
+$set->loadByKey([
+    1 =>['firstname' =>'Dave'],
+    2 =>['lastname' =>'Graham'],
+]);
+```
+
+## MultiResult
+
+A multi-result is a set used to express the result of bulk-operations on the underlying
+records in an ActiveRecordSet. For example, calling `$set->validate()` returns a MultiResult.
+
+Use `allTrue()`, `allFalse()`, and `toArray()` to easily interpret your MultiResult:
+
+```php
+if ($set->validate()->allTrue()) {
+    // All Valid:
+    // Note that $set->validate() returned a MultiResult object, which we determined
+    // was completely valid by calling allTrue().
+} else {
+    // Errors:
+    // $set->errors also returns a MultiResult, which we can convert to an array
+    // The keys are the record keys and the values are the values returned by
+    // calling getErrors() on the corresponding record.
+    echo CJSON::encode([
+        'message' =>'Errors occurred',
+        'errors' =>$set->errors->toArray(),
+    ]);
 }
 ```
-
-#### Delete / Save / Validate
-
-`delete()`, `save()`, and `validate()` implement the same interface as their CActiveRecord counterparts
-but apply the method to every record in the set. They return true if the operation succeeded for all
-records, and false otherwise.
-
-```php
-// Validate all customers in the set
-if ($customers->validate()) { /* all are valid */ }
-
-// Save all customers in the set
-if ($customers->save()) { /* all saved */ }
-
-// Delete all customers in the set
-if ($customers->delete()) { /* all deleted */ }
-```
-
-#### Get Errors
-
-```php
-// Whether any record in the set has an error
-if ($customers->hasError()) { /* at least one record has an error */ }
-
-// Errors indexed by record key
-$customers->getErrors();
-```
-
-### Re-Indexing
-
-You can specify any index you want when adding records to the set. You can also create a new set indexed by a model
-attribute by using the `reindex()` method:
-
-```php
-$customers = new ActiveRecordSet([new Customer(), new Customer(), new Customer()]);
-$customers->loadToEach($data);
-if ($customers->save()) {
-    // Reindex the set based on the newly-set primary key
-    // The following are equivalent
-    $customers = $customers->reindex();
-    $customers = $customers->reindex('id');
-    $customers = $customers->reindex('primaryKey');
-}
-```
-
-Note that reindexing on a non-unique attribute can throw an exception if there is already a value stored at that key.
-You can overwrite the existing value by passing `true` as the second argument to `reindex()`. This tells the reindexer
-to use `Set::replace()` instead of `Set::add()` when re-inserting records into the set.
-
-## Set Methods
-
-The Set class implements standard set functions, including `union()`, `intersect()`, `difference()`, `contains()`,
-`add()`, `remove()`, `clear()`, and `merge()`.
