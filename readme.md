@@ -30,7 +30,13 @@ foreach ($customers as $id =>$record) {
 }
 ```
 
-### Setting Properties
+### Loading Data
+
+You can load data into each record in the set using `load()`, or into records specified by a
+given key using `loadByKey()`. The methods `setAttributes()` and `setAttributesByKey()` are
+aliases of these methods.
+
+Both methods return a MultiResult indicating whether any record was modified.
 
 ```php
 // Here's some data...

@@ -158,6 +158,14 @@ class ActiveRecordSet extends Set
     }
 
     /**
+     * Alias of [[loadByKey()]]
+     */
+    public function setAttributesByKey($attributes, $safeOnly)
+    {
+        return $this->loadByKey($attributes, $safeOnly);
+    }
+
+    /**
      * Loads data into each record in the set
      *
      * @param array   $attributes  data to load into each record
@@ -166,15 +174,15 @@ class ActiveRecordSet extends Set
      */
     public function load($attributes, $safeOnly=true)
     {
-        $loaded = false;
+        $result = new MultiResult();
         if (is_array($indexedAttributes)) {
             foreach ($this as $key =>$record) {
                 $oldAttributes = $record->getAttributes();
                 $record->setAttributes($indexedAttributes[$key], $safeOnly);
-                $loaded = $loaded || ($oldAttributes !== $record->getAttributes());
+                $result[$key] = $oldAttributes !== $record->getAttributes();
             };
         }
-        return $loaded;
+        return $result;
     }
 
     /**
@@ -184,21 +192,21 @@ class ActiveRecordSet extends Set
      *
      * @param array   $indexedAttributes  arrays of record attributes indexed by record key
      * @param boolean $safeOnly           whether to only set safe attributes
-     * @return boolean  whether any data was loaded
+     * @return MultiResult  whether any data was loaded
      */
     public function loadByKey($indexedAttributes, $safeOnly=true)
     {
-        $loaded = false;
+        $result = new MultiResult();
         if (is_array($indexedAttributes)) {
             foreach ($this as $key =>$record) {
                 if (isset($indexedAttributes[$key])) {
                     $oldAttributes = $record->getAttributes();
                     $record->setAttributes($indexedAttributes[$key], $safeOnly);
-                    $loaded = $loaded || ($oldAttributes !== $record->getAttributes());
+                    $result[$key] = $oldAttributes !== $record->getAttributes();
                 }
             };
         }
-        return $loaded;
+        return $result;
     }
 
     /**
@@ -267,7 +275,7 @@ class MultiResult extends Set
      * @param boolean $strict  whether to use strict (===) truth checking
      * @return boolean  whether every result in the set is true
      */
-    public function getIsAllTrue($strict=false)
+    public function getAllTrue($strict=false)
     {
         $allTrue = true;
         $this->map(function ($value, $key) use ($strict, &$allTrue) {
@@ -276,7 +284,7 @@ class MultiResult extends Set
         return $allTrue;
     }
 
-    public function getIsPartlyTrue($strict=false)
+    public function getPartlyTrue($strict=false)
     {
         $partlyTrue = false;
         $this->map(function ($value, $key) use ($strict, &$partlyTrue) {
@@ -289,7 +297,7 @@ class MultiResult extends Set
      * @param boolean $strict  whether to use strict (===) false checking
      * @return boolean  whether every result in the set is false
      */
-    public function getIsAllFalse($strict=false)
+    public function getAllFalse($strict=false)
     {
         $allFalse = true;
         $this->map(function ($value, $key) use ($strict, &$allFalse) {
@@ -301,7 +309,7 @@ class MultiResult extends Set
     /**
      *
      */
-    public function getIsPartlyFalse($strict=false)
+    public function getPartlyFalse($strict=false)
     {
         $partlyFalse = false;
         $this->map(function ($value, $key) use ($strict, &$partlyFalse) {
