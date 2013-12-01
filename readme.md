@@ -51,8 +51,8 @@ $set->balance = 0;
 
 // ... or specify which records to set data on
 $set->loadByKey([
-    1 =>['firstname' =>'Dave'],
-    2 =>['lastname' =>'Graham'],
+    1 =>['firstname' =>'Dave', 'lastname' =>'Graham'],
+    2 =>['firstname' =>'Nalle', 'lastname' =>'Hukkataival'],
 ]);
 ```
 
@@ -61,21 +61,28 @@ $set->loadByKey([
 A multi-result is a set used to express the result of bulk-operations on the underlying
 records in an ActiveRecordSet. For example, calling `$set->validate()` returns a MultiResult.
 
-Use `allTrue()`, `allFalse()`, and `toArray()` to easily interpret your MultiResult:
+The keys of the MultiResult are the record keys, and the values are the results returned
+by the corresponding record. Fetching properties, calling methods, or setting properties
+all return a multiresult if performed on the entire record set.
+
+Use `allTrue`, `partlyTrue`, `allFalse`, `partlyFalse`, and `toArray()` to interpret your MultiResult:
 
 ```php
-if ($set->validate()->allTrue()) {
+if ($set->validate()->allTrue) {
     // All Valid:
     // Note that $set->validate() returned a MultiResult object, which we determined
     // was completely valid by calling allTrue().
-} else {
-    // Errors:
-    // $set->errors also returns a MultiResult, which we can convert to an array
-    // The keys are the record keys and the values are the values returned by
-    // calling getErrors() on the corresponding record.
+} else if ($set->hasErrors()->partlyTrue) {
+    // hasErrors() is a MultiResult, and partlyTrue indicates at least one record
+    // had an error. $set->getErrors() also returns a MultiResult, which can be
+    // converted into an array.
     echo CJSON::encode([
-        'message' =>'Errors occurred',
+        'message' =>'Validation errors',
         'errors' =>$set->errors->toArray(),
+    ]);
+} else {
+    echo CJSON::encode([
+        'message' =>'Internal error',
     ]);
 }
 ```

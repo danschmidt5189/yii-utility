@@ -267,7 +267,7 @@ class MultiResult extends Set
      * @param boolean $strict  whether to use strict (===) truth checking
      * @return boolean  whether every result in the set is true
      */
-    public function allTrue($strict=false)
+    public function getIsAllTrue($strict=false)
     {
         $allTrue = true;
         $this->map(function ($value, $key) use ($strict, &$allTrue) {
@@ -276,16 +276,37 @@ class MultiResult extends Set
         return $allTrue;
     }
 
+    public function getIsPartlyTrue($strict=false)
+    {
+        $partlyTrue = false;
+        $this->map(function ($value, $key) use ($strict, &$partlyTrue) {
+            $partlyTrue = $partlyTrue || ($strict ? true === $value : $value);
+        });
+        return $partlyTrue;
+    }
+
     /**
      * @param boolean $strict  whether to use strict (===) false checking
      * @return boolean  whether every result in the set is false
      */
-    public function allFalse($strict=false)
+    public function getIsAllFalse($strict=false)
     {
         $allFalse = true;
         $this->map(function ($value, $key) use ($strict, &$allFalse) {
             $allFalse = $allFalse && ($strict ? false === $value : !$value);
         });
         return $allFalse;
+    }
+
+    /**
+     *
+     */
+    public function getIsPartlyFalse($strict=false)
+    {
+        $partlyFalse = false;
+        $this->map(function ($value, $key) use ($strict, &$partlyFalse) {
+            $partlyFalse = $partlyFalse || ($strict ? false === $value : !$value);
+        });
+        return $partlyFalse;
     }
 }
