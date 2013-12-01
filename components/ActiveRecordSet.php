@@ -13,6 +13,68 @@
 class ActiveRecordSet extends Set implements ActiveRecordInterface
 {
     /**
+     * @var integer  counter that keeps track of how many new records were added to the class using [[populate()]]
+     */
+    protected $population = 0;
+
+    /**
+     * This method is overridden so that attributes of records in the set can be accessed like properties
+     */
+    public function __set($property, $value)
+    {
+        if (false === $this->loadEach(array($property =>$value), false)) {
+            parent::__set($property, $value);
+        }
+    }
+
+    /**
+     * This method is overridden so that attributes of records in the set can be access like properties
+     *
+     * The returned properties are in an array indexed by key and then property name.
+     */
+    public function __get($property)
+    {
+        try {
+            return parent::__get($property);
+        } catch (Exception $e) {
+            $attributes = $this->getAttribute($property);
+            if (!empty($attributes)) {
+                return $attributes;
+            }
+            throw $e;
+        }
+    }
+
+    /**
+     * Populates the set with new records
+     *
+     * @param string  $className  ActiveRecord class name
+     * @param integer $number     # of records to create
+     * @param string  $scenario   scenario in which to instantiate the records
+     */
+    public function populate($className, $number, $scenario='insert')
+    {
+        for ($i=0; $i<$number; $i++) {
+            $this->replace('new_'.$this->population++, Yii::createComponent($className, $scenario));
+        }
+    }
+
+    /**
+     * Returns a specific attribute from each record in the set
+     *
+     * @param string $attribute  attribute name
+     * @return array  attribute values indexed by record key
+     */
+    public function getAttribute($attribute)
+    {
+        $data = array();
+        foreach ($this as $key =>$record) {
+            $data[$key] = $record->getAttribute($attribute);
+        }
+        return $data;
+    }
+
+    /**
      * Returns attributes of each record in the set indexed by the record key
      *
      * @param array $attributes  attributes to retrieve. Use null to retrieve all attributes.
@@ -28,9 +90,7 @@ class ActiveRecordSet extends Set implements ActiveRecordInterface
     }
 
     /**
-     * Sets attributes to each record in the set
-     *
-     * This is equivalent to [[load]]
+     * Sets attributes of records in the set
      *
      * @param array   $indexedAttributes  arrays of record attributes indexed by record key
      * @param boolean $safeOnly    whether to only set safe attributes
@@ -48,7 +108,7 @@ class ActiveRecordSet extends Set implements ActiveRecordInterface
      * @param boolean $safeOnly           whether to only set safe attributes
      * @return boolean  whether any data was loaded
      */
-    public function load($indexedAttributes, $safeOnly)
+    public function load($indexedAttributes, $safeOnly=true)
     {
         $loaded = false;
         if (is_array($indexedAttributes)) {
@@ -66,11 +126,14 @@ class ActiveRecordSet extends Set implements ActiveRecordInterface
     /**
      * Loads data into each record in the set
      *
+     * The same set of data is loaded into each record, hence the method name. To load different data into
+     * different records based on the key, use [[load()]].
+     *
      * @param array   $attributes  data to load. This is loaded into each record in the set.
      * @param boolean $safeOnly    whether to only set safe attributes
      * @return boolean  whether any records were modified
      */
-    public function loadToEach($attributes, $safeOnly)
+    public function loadEach($attributes, $safeOnly=true)
     {
         $loaded = false;
         if (is_array($attributes)) {
@@ -172,7 +235,8 @@ class ActiveRecordSet extends Set implements ActiveRecordInterface
      */
     public function reindex($attribute='primaryKey', $replace=false)
     {
-        $set = new ActiveRecordSet();
+        $className = get_class($this);
+        $set = new $className();
         foreach ($this as $record) {
             $newKey = isset($record->{$attribute}) && !empty($record->{$attribute}) ? $record->{$attribute} : uniqid();
             $newKey = is_array($newKey) ? implode('_', $newKey) : $newKey;
@@ -183,5 +247,11 @@ class ActiveRecordSet extends Set implements ActiveRecordInterface
             }
         }
         return $set;
+    }
+
+    public function clear()
+    {
+        $this->population = 0;
+        parent::clear();
     }
 }
